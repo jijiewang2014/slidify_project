@@ -1,0 +1,82 @@
+---
+title       : A Shiny Application of Population Density Map
+subtitle    : An appliation that displays population density data on a googleVis map
+author      : Jijie Wang
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---.class #slide1
+
+## Introduction
+
+<B>Purpose of the application:</B> This application is to display population density (people per sq. km of land area) by country from 2010 to 2013.
+<br>
+<br>
+<B>Source of the data:</B> The data source is from World Bank Website (http://data.worldbank.org/indicator/EN.POP.DNST).
+<br>
+<br>
+<B>How to use:</B> 
+When you select a year from the textbox from the left pane of the web page, a map will appear in the right pane to display the world population density data of the year selected. If you mouse over the map, it will display year and population density information.
+
+---.class #slide2 
+
+## User Interface
+
+On the left pane of the web page, the user can select a year. The following codes in ui.R will display a select box for the user.
+
+```{r,cache=FALSE,results="asis"}
+   
+library(shiny)
+library(slidifyLibraries). 
+  
+    selectInput("yearInput", 
+                label = "Please select a year.",
+                choices = c("2010", "2011",
+                            "2012", "2013"),
+                selected = "2010"
+                )
+ 
+```
+
+---.class #slide3
+
+## Server Side Coding
+
+On the server side, R codes will take the user input, retrieve data from a data file, and then display a map according to the inputs. The codes are as follows.
+```{r,cache=FALSE,eval=FALSE}
+  myYear <- reactive({
+    input$yearInput
+  })
+  output$yearTextOutput <- renderText({
+    myYearColumn<-paste("year", myYear())
+    paste("Your have selected year", myYear())
+  })
+  output$gvisOutput <- renderGvis({    
+     myYearColumn<-paste("year", myYear(),sep="")
+     gvisGeoChart(country_data, locationvar="country", colorvar=myYearColumn, 
+                  hovervar="country",options=list(width=600, height=400, dataMode='regions'))
+  })
+```
+
+---.class #slide4
+## Output
+Assuming the user selects year 2010, the following map will be displayed.<br>
+
+```{r,cache=FALSE,echo=FALSE,results='asis'}
+  library(googleVis)
+  op <- options(gvis.plot.tag = "chart")
+
+  country_data<-read.csv("data/worldpd.csv",header=TRUE)  
+  myYearColumn<-"year2010"
+  geo<-gvisGeoChart(country_data, locationvar="country", colorvar=myYearColumn, 
+                  hovervar="country",options=list(width=650, height=450, dataMode='regions'))
+  
+  
+  print(geo, tag="chart")            
+
+ 
+```
